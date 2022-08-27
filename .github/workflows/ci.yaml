@@ -24,7 +24,7 @@ jobs:
       - name: Build
         run: npm run build
 
-      - uses: actions/upload-pages-artifact@v1.0.10
+      - uses: actions/upload-pages-artifact@v1.0.3
         with:
           path: dist/
           retention-days: 1
