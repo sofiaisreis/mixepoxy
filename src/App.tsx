@@ -1,16 +1,6 @@
 import { useState } from "react";
-import reactLogo from "./assets/react.svg";
+import { Card, Container, Grid, Input, Select, Text } from "@mantine/core";
 import "./App.css";
-import {
-  Card,
-  Container,
-  Grid,
-  Input,
-  NumberInput,
-  Radio,
-  Tabs,
-  Text,
-} from "@mantine/core";
 
 function calculateCoef(A: number, B: number) {
   return A == 0 ? 0 : B / A;
@@ -25,11 +15,11 @@ function getTotalWeight(
 ) {
   switch (type) {
     case "resin":
-      return propSelected * (coef + 1);
+      return Math.round(propSelected * (coef + 1) * 100) / 100;
     case "hardener":
-      return (propSelected * (coef + 1)) / coef;
+      return Math.round(((propSelected * (coef + 1)) / coef) * 100) / 100;
     default:
-      return 0;
+      throw new Error("oops!");
   }
 }
 
@@ -40,11 +30,11 @@ function getResin(
 ) {
   switch (type) {
     case "totalWeight":
-      return propSelected / (coef + 1);
+      return Math.round((propSelected / (coef + 1)) * 100) / 100;
     case "hardener":
-      return propSelected / coef;
+      return Math.round((propSelected / coef) * 100) / 100;
     default:
-      return 0;
+      throw new Error("oops!");
   }
 }
 
@@ -55,31 +45,40 @@ function getHardener(
 ) {
   switch (type) {
     case "totalWeight":
-      return (propSelected / (coef + 1)) * coef;
+      return Math.round((propSelected / (coef + 1)) * coef * 100) / 100;
     case "resin":
-      return propSelected * coef;
+      return Math.round(propSelected * coef * 100) / 100;
     default:
-      return 0;
+      throw new Error("oops!");
   }
 }
 
-function getCurrValue(value: string) {
-  if (value == "totalWeight") return 0;
-  else if (value == "resin") return 1;
-  else if (value == "hardener") return 2;
-  else return;
+function getLabel(selection: ParamType) {
+  switch (selection) {
+    case "totalWeight":
+      return "Resin+hardener weight (in grams)";
+    case "resin":
+      return "Resin (in grams)";
+    case "hardener":
+      return "Hardener weight (in grams)";
+    default:
+      throw new Error("oops!");
+  }
 }
 
 function App() {
-  const [value, setValue] = useState<ParamType>("totalWeight");
+  const [selection, setSelection] = useState<ParamType>("totalWeight");
   const [propA, setPropA] = useState(0);
   const [propB, setPropB] = useState(0);
-  const [inputTotalWeight, setInputTotalWeight] = useState(0);
-  const [inputResin, setInputResin] = useState(0);
-  const [inputHardener, setInputHardener] = useState(0);
+  const [input, setInput] = useState(0);
 
   const coef = calculateCoef(propA, propB);
-  const ratio = calculateCoef(propA, propB) + 1;
+
+  const options: { value: ParamType; label: string }[] = [
+    { value: "totalWeight", label: "Total weight" },
+    { value: "resin", label: "Resin" },
+    { value: "hardener", label: "Hardener" },
+  ];
 
   return (
     <Container>
@@ -87,44 +86,6 @@ function App() {
         <Text weight={500} size="lg" mt="md">
           Calculate and Mix (weight)!
         </Text>
-        <Container>
-          <Grid>
-            <Grid.Col span={8}>
-              <Text weight={60} size="lg" mt="md">
-                Resin proportion mix
-              </Text>
-            </Grid.Col>
-
-            <Grid.Col span={4}>
-              <Text weight={60} size="lg" mt="md">
-                Coeficient
-              </Text>
-            </Grid.Col>
-          </Grid>
-        </Container>
-        <Container>
-          <Grid>
-            <Grid.Col span={4}>
-              <Input
-                type={"number"}
-                placeholder="A prop (Resin)"
-                onChange={(evt) => setPropA(evt.target.value)}
-              />
-            </Grid.Col>
-            <Grid.Col span={4}>
-              <Input
-                type={"number"}
-                placeholder="B prop (Hardener)"
-                onChange={(evt) => setPropB(evt.target.value)}
-              />
-            </Grid.Col>
-            <Grid.Col span={4}>
-              <Text weight={60} size="lg" mt="md">
-                {coef}
-              </Text>
-            </Grid.Col>
-          </Grid>
-        </Container>
         Let's mixepoxy!
         <Container
           style={{
@@ -132,73 +93,97 @@ function App() {
             flexDirection: "column",
           }}
         >
-          <Radio.Group
-            value={value}
-            onChange={(val) => setValue(val as ParamType)}
+          <Card
+            shadow="sm"
+            p="lg"
+            radius="md"
+            style={{ margin: "20px" }}
+            withBorder
           >
-            <Container>
-              <>
-                <Radio
-                  value="totalWeight"
-                  label="Total Weight"
-                  defaultChecked
-                />
-                {value == "totalWeight" ? (
-                  <Input
-                    type={"number"}
-                    placeholder="Resin+hardener weight (in grams)"
-                    onChange={(evt) =>
-                      setInputTotalWeight(Number(evt.target.value))
-                    }
+            <Grid>
+              <Grid.Col span={6}>
+                {selection == "resin"
+                  ? input
+                  : selection == "hardener"
+                  ? getResin(input, "hardener", coef)
+                  : getResin(input, "totalWeight", coef)}
+                <Text>Resin</Text>
+              </Grid.Col>
+              <Grid.Col span={6}>
+                {selection == "hardener"
+                  ? input
+                  : selection == "resin"
+                  ? getHardener(input, "resin", coef)
+                  : getHardener(input, "totalWeight", coef)}
+                <Text>Hardener</Text>
+              </Grid.Col>
+            </Grid>
+          </Card>
+          <Text>Total weight: </Text>
+          {selection == "totalWeight"
+            ? input
+            : selection == "resin"
+            ? getTotalWeight(input, "resin", coef)
+            : getTotalWeight(input, "hardener", coef)}
+          <Grid>
+            <Grid.Col span={6}>
+              <Container>
+                <Grid>
+                  <Grid.Col span={8}>
+                    <Text weight={60} size="lg" mt="md">
+                      Resin proportion mix
+                    </Text>
+                  </Grid.Col>
+                </Grid>
+              </Container>
+              <Container>
+                <Grid>
+                  <Grid.Col span={4}>
+                    <Input
+                      type="number"
+                      placeholder="A"
+                      onChange={(evt) => setPropA(evt.target.value)}
+                    />
+                  </Grid.Col>
+                  <Grid.Col span={4}>
+                    <Input
+                      type="number"
+                      placeholder="B"
+                      onChange={(evt) => setPropB(evt.target.value)}
+                    />
+                  </Grid.Col>
+                </Grid>
+              </Container>
+            </Grid.Col>
+            <Grid.Col
+              span={6}
+              style={{ display: "flex", alignItems: "flex-end" }}
+            >
+              <Grid>
+                <Grid.Col span={6}>
+                  <Select
+                    placeholder="Pick one"
+                    description="What is the fixed value?"
+                    variant="filled"
+                    value={selection}
+                    onChange={(val) => setSelection(val as ParamType)}
+                    radius="md"
+                    data={options}
                   />
-                ) : (
-                  getTotalWeight(
-                    value == "hardener" ? inputHardener : inputResin,
-                    value,
-                    coef
-                  )
-                )}
-              </>
-            </Container>
-            <Container>
-              <>
-                <Radio value="resin" label="Resin" />
-                {value == "resin" ? (
+                </Grid.Col>
+                <Grid.Col
+                  span={6}
+                  style={{ display: "flex", alignItems: "flex-end" }}
+                >
                   <Input
-                    type={"number"}
-                    placeholder="Resin in weight (in grams)"
-                    onChange={(evt) => setInputResin(Number(evt.target.value))}
+                    type="number"
+                    placeholder={getLabel(selection)}
+                    onChange={(evt) => setInput(Number(evt.target.value))}
                   />
-                ) : (
-                  getResin(
-                    value == "totalWeight" ? inputTotalWeight : inputHardener,
-                    value,
-                    coef
-                  )
-                )}
-              </>
-            </Container>
-            <Container>
-              <>
-                <Radio value="hardener" label="Hardener" />
-                {value == "hardener" ? (
-                  <Input
-                    type={"number"}
-                    placeholder="Hardener in weight (in grams)"
-                    onChange={(evt) =>
-                      setInputHardener(Number(evt.target.value))
-                    }
-                  />
-                ) : (
-                  getHardener(
-                    value == "totalWeight" ? inputTotalWeight : inputResin,
-                    value,
-                    coef
-                  )
-                )}
-              </>
-            </Container>
-          </Radio.Group>
+                </Grid.Col>
+              </Grid>
+            </Grid.Col>
+          </Grid>
         </Container>
       </Card>
     </Container>
