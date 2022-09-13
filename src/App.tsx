@@ -125,27 +125,21 @@ function App() {
             : selection == "resin"
             ? getTotalWeight(input, "resin", coef)
             : getTotalWeight(input, "hardener", coef)}
-          <Grid>
+          <Grid grow gutter="xl" justify="center">
             <Grid.Col span={6}>
               <Container>
+                <Text weight={60} size="lg" mt="md">
+                  Resin proportion
+                </Text>
                 <Grid>
-                  <Grid.Col span={8}>
-                    <Text weight={60} size="lg" mt="md">
-                      Resin proportion mix
-                    </Text>
-                  </Grid.Col>
-                </Grid>
-              </Container>
-              <Container>
-                <Grid>
-                  <Grid.Col span={4}>
+                  <Grid.Col span={6}>
                     <Input
                       type="number"
                       placeholder="A"
                       onChange={(evt) => setPropA(evt.target.value)}
                     />
                   </Grid.Col>
-                  <Grid.Col span={4}>
+                  <Grid.Col span={6}>
                     <Input
                       type="number"
                       placeholder="B"
@@ -160,7 +154,7 @@ function App() {
               style={{ display: "flex", alignItems: "flex-end" }}
             >
               <Grid>
-                <Grid.Col span={6}>
+                <Grid.Col span={7}>
                   <Select
                     placeholder="Pick one"
                     description="What is the fixed value?"
@@ -172,7 +166,7 @@ function App() {
                   />
                 </Grid.Col>
                 <Grid.Col
-                  span={6}
+                  span={5}
                   style={{ display: "flex", alignItems: "flex-end" }}
                 >
                   <Input
