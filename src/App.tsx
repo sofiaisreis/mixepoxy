@@ -1,57 +1,14 @@
 import { useState } from "react";
 import { Card, Container, Grid, Input, Select, Text } from "@mantine/core";
 import "./App.css";
+import MiniCard from "./components/MiniCard";
+import { getHardener, getResin, getTotalWeight } from "./utils";
 
 function calculateCoef(A: number, B: number) {
   return A == 0 ? 0 : B / A;
 }
 
 type ParamType = "totalWeight" | "resin" | "hardener";
-
-function getTotalWeight(
-  propSelected: number,
-  type: Exclude<ParamType, "totalWeight">,
-  coef: number
-) {
-  switch (type) {
-    case "resin":
-      return Math.round(propSelected * (coef + 1) * 100) / 100;
-    case "hardener":
-      return Math.round(((propSelected * (coef + 1)) / coef) * 100) / 100;
-    default:
-      throw new Error("oops!");
-  }
-}
-
-function getResin(
-  propSelected: number,
-  type: Exclude<ParamType, "resin">,
-  coef: number
-) {
-  switch (type) {
-    case "totalWeight":
-      return Math.round((propSelected / (coef + 1)) * 100) / 100;
-    case "hardener":
-      return Math.round((propSelected / coef) * 100) / 100;
-    default:
-      throw new Error("oops!");
-  }
-}
-
-function getHardener(
-  propSelected: number,
-  type: Exclude<ParamType, "hardener">,
-  coef: number
-) {
-  switch (type) {
-    case "totalWeight":
-      return Math.round((propSelected / (coef + 1)) * coef * 100) / 100;
-    case "resin":
-      return Math.round(propSelected * coef * 100) / 100;
-    default:
-      throw new Error("oops!");
-  }
-}
 
 function getLabel(selection: ParamType) {
   switch (selection) {
@@ -86,45 +43,51 @@ function App() {
         <Text weight={500} size="lg" mt="md">
           Calculate and Mix (weight)!
         </Text>
-        Let's mixepoxy!
         <Container
           style={{
             display: "flex",
             flexDirection: "column",
           }}
         >
-          <Card
-            shadow="sm"
-            p="lg"
-            radius="md"
-            style={{ margin: "20px" }}
-            withBorder
-          >
-            <Grid>
-              <Grid.Col span={6}>
-                {selection == "resin"
-                  ? input
-                  : selection == "hardener"
-                  ? getResin(input, "hardener", coef)
-                  : getResin(input, "totalWeight", coef)}
-                <Text>Resin</Text>
-              </Grid.Col>
-              <Grid.Col span={6}>
-                {selection == "hardener"
-                  ? input
-                  : selection == "resin"
-                  ? getHardener(input, "resin", coef)
-                  : getHardener(input, "totalWeight", coef)}
-                <Text>Hardener</Text>
-              </Grid.Col>
-            </Grid>
-          </Card>
-          <Text>Total weight: </Text>
-          {selection == "totalWeight"
-            ? input
-            : selection == "resin"
-            ? getTotalWeight(input, "resin", coef)
-            : getTotalWeight(input, "hardener", coef)}
+          <Grid grow>
+            <Grid.Col span={4}>
+              <MiniCard
+                label="Resin"
+                value={
+                  selection == "resin"
+                    ? input
+                    : selection == "hardener"
+                    ? getResin(input, "hardener", coef)
+                    : getResin(input, "totalWeight", coef)
+                }
+              />
+            </Grid.Col>
+            <Grid.Col span={4}>
+              <MiniCard
+                label="Hardener"
+                value={
+                  selection == "hardener"
+                    ? input
+                    : selection == "resin"
+                    ? getHardener(input, "resin", coef)
+                    : getHardener(input, "totalWeight", coef)
+                }
+              />
+            </Grid.Col>
+            <Grid.Col span={4}>
+              <MiniCard
+                label="Total Weight"
+                value={
+                  selection == "totalWeight"
+                    ? input
+                    : selection == "resin"
+                    ? getTotalWeight(input, "resin", coef)
+                    : getTotalWeight(input, "hardener", coef)
+                }
+              />
+            </Grid.Col>
+          </Grid>
+
           <Grid grow gutter="xl" justify="center">
             <Grid.Col span={6}>
               <Container>
@@ -157,7 +120,7 @@ function App() {
                 <Grid.Col span={7}>
                   <Select
                     placeholder="Pick one"
-                    description="What is the fixed value?"
+                    description="Weight in grams"
                     variant="filled"
                     value={selection}
                     onChange={(val) => setSelection(val as ParamType)}
